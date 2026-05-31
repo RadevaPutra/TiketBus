@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'article_detail_page.dart';
 
 class TravelTipsPage extends StatelessWidget {
   const TravelTipsPage({super.key});
@@ -61,15 +62,19 @@ class TravelTipsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 20),
                   _buildArticleCard(
+                    context,
                     "5 Rute Bus Terindah di Pulau Jawa",
                     "Nikmati pemandangan gunung dan pantai dari jendela bus Anda.",
                     "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=600",
+                    "Pulau Jawa memiliki berbagai rute bus dengan pemandangan yang menakjubkan. Beberapa di antaranya meliputi rute selatan Jawa yang menawarkan pemandangan pantai selatan yang eksotis, serta rute pegunungan yang melalui daerah Puncak atau tol Trans-Jawa yang mulus dan cepat.\n\nPerjalanan menggunakan bus memberikan pengalaman berbeda, karena Anda bisa menikmati indahnya alam sepanjang perjalanan tanpa harus bingung menyetir sendiri. Jangan lupa pilih kursi dekat jendela untuk pengalaman visual yang optimal saat melewati perbukitan, desa-desa asri, atau pesisir yang membentang luas.",
                   ),
                   const SizedBox(height: 20),
                   _buildArticleCard(
+                    context,
                     "Cara Tidur Nyaman di Bus Malam",
                     "Tips memilih posisi duduk dan perlengkapan tidur yang wajib dibawa.",
                     "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=600",
+                    "Tidur nyaman di bus malam adalah kunci agar Anda sampai di tujuan dengan keadaan segar. Pertama, pilihlah pakaian yang longgar dan cukup hangat. Bawa juga perlengkapan tidur seperti bantal leher U-shape, penutup mata, dan jaket tebal.\n\nUsahakan mengatur kursi (reclining) pada posisi yang paling pas tanpa mengganggu penumpang di belakang. Hindari terlalu banyak minum sebelum naik bus agar Anda tidak sering terbangun. Terakhir, tidurlah dengan posisi yang nyaman dan amankan barang berharga di dekat Anda.",
                   ),
                 ],
               ),
@@ -140,38 +145,52 @@ class TravelTipsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildArticleCard(String title, String subtitle, String imageUrl) {
-    return Container(
-      height: 120,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15)],
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20)),
-            child: Image.network(imageUrl, width: 120, height: 120, fit: BoxFit.cover),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 5),
-                  Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                ],
-              ),
+  Widget _buildArticleCard(BuildContext context, String title, String subtitle, String imageUrl, String content) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ArticleDetailPage(
+              title: title,
+              imageUrl: imageUrl,
+              content: content,
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-          const SizedBox(width: 10),
-        ],
+        );
+      },
+      child: Container(
+        height: 120,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15)],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), bottomLeft: Radius.circular(20)),
+              child: Image.network(imageUrl, width: 120, height: 120, fit: BoxFit.cover),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(title, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 5),
+                    Text(subtitle, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                  ],
+                ),
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+            const SizedBox(width: 10),
+          ],
+        ),
       ),
     );
   }

@@ -7,12 +7,16 @@ class SeatSelectionPage extends StatefulWidget {
   final String originCity;
   final String destinationCity;
   final String busName;
+  final String date;
+  final double price;
 
   const SeatSelectionPage({
     super.key,
     required this.originCity,
     required this.destinationCity,
     required this.busName,
+    required this.date,
+    required this.price,
   });
 
   @override
@@ -39,77 +43,91 @@ class _SeatSelectionPageState extends State<SeatSelectionPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF1A237E), // Deep Indigo
-              Color(0xFF3949AB), // Indigo
-              Color(0xFF5C6BC0), // Light Indigo
-            ],
+      body: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 900),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) {
+          return Opacity(
+            opacity: value,
+            child: Transform.translate(
+              offset: Offset(0, 30 * (1 - value)),
+              child: child,
+            ),
+          );
+        },
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF1A237E), // Deep Indigo
+                Color(0xFF3949AB), // Indigo
+                Color(0xFF5C6BC0), // Light Indigo
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildBusInfoHeader(),
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: 20),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(40),
-                      topRight: Radius.circular(40),
+          child: SafeArea(
+            child: Column(
+              children: [
+                _buildBusInfoHeader(),
+                Expanded(
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 30),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(40),
+                        topRight: Radius.circular(40),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 20,
+                          offset: Offset(0, -5),
+                        )
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 20,
-                        offset: Offset(0, -5),
-                      )
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      _buildLegend(),
-                      const SizedBox(height: 20),
-                      const Text(
-                        "BAGIAN DEPAN BUS",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      const Divider(thickness: 2, color: Color(0xFFF0F0F0)),
-                      const SizedBox(height: 10),
-                      Expanded(
-                        child: GridView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 4,
-                            mainAxisSpacing: 15,
-                            crossAxisSpacing: 15,
-                            childAspectRatio: 1,
+                    child: Column(
+                      children: [
+                        _buildLegend(),
+                        const SizedBox(height: 20),
+                        const Text(
+                          "BAGIAN DEPAN BUS",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
                           ),
-                          itemCount: seats.length,
-                          itemBuilder: (context, index) => _buildSeatItem(index),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 10),
+                        const Divider(thickness: 2, color: Color(0xFFF0F0F0)),
+                        const SizedBox(height: 10),
+                        Expanded(
+                          child: GridView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 4,
+                              mainAxisSpacing: 15,
+                              crossAxisSpacing: 15,
+                              childAspectRatio: 1,
+                            ),
+                            itemCount: seats.length,
+                            itemBuilder: (context, index) => _buildSeatItem(index),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              _buildFooter(),
-            ],
+                _buildFooter(),
+              ],
+            ),
           ),
         ),
       ),
@@ -143,7 +161,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage> {
                 Icon(Icons.directions_bus, color: Colors.amber, size: 18),
                 SizedBox(width: 8),
                 Text(
-                  "${widget.busName} • 12 Mei 2024",
+                  "${widget.busName} • ${widget.date}",
                   style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
                 ),
               ],
@@ -244,7 +262,7 @@ class _SeatSelectionPageState extends State<SeatSelectionPage> {
 
   Widget _buildFooter() {
     int selectedCount = seats.where((s) => s.isSelected).length;
-    double pricePerSeat = 150000;
+    double pricePerSeat = widget.price;
     double totalPrice = selectedCount * pricePerSeat;
 
     return Container(
@@ -283,6 +301,11 @@ class _SeatSelectionPageState extends State<SeatSelectionPage> {
                   builder: (context) => PaymentPage(
                     selectedSeats: selectedCount,
                     totalPrice: totalPrice,
+                    busName: widget.busName,
+                    origin: widget.originCity,
+                    destination: widget.destinationCity,
+                    date: widget.date,
+                    seatNumbers: seats.where((s) => s.isSelected).map((s) => s.label).toList(),
                   ),
                 ),
               );

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'register_page.dart';
 import 'forgot_password_page.dart';
+import '../services/auth_service.dart';
+import 'admin_fleet_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,25 +22,30 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xFF1A237E), Color(0xFF3949AB)],
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: const NetworkImage('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=2069'), // Aesthetic bus/travel image
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(Colors.black.withOpacity(0.5), BlendMode.darken),
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
-            child: Container(
-              width: 450,
-              padding: const EdgeInsets.all(40),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 40, offset: const Offset(0, 20)),
-                ],
-              ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(30),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+                child: Container(
+                  width: 450,
+                  padding: const EdgeInsets.all(40),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.85), // Higher transparency to show glassmorphism
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(color: Colors.white.withOpacity(0.2)),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 40, offset: const Offset(0, 20)),
+                    ],
+                  ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -53,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(color: Colors.grey),
                   ),
                   const SizedBox(height: 40),
-                  _buildTextField("Email", Icons.email_outlined, _emailController),
+                  _buildTextField("Email / Username", Icons.email_outlined, _emailController),
                   const SizedBox(height: 20),
                   _buildPasswordField(),
                   const SizedBox(height: 15),
@@ -75,10 +83,22 @@ class _LoginPageState extends State<LoginPage> {
                     height: 55,
                     child: ElevatedButton(
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Login Berhasil!"), backgroundColor: Colors.green),
-                        );
-                        Navigator.pop(context);
+                        if (_emailController.text == 'admin' && _passwordController.text == 'admin123') {
+                          AuthService().login('Administrator');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Login Admin Berhasil!"), backgroundColor: Colors.green),
+                          );
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(builder: (context) => const AdminFleetPage()),
+                          );
+                        } else {
+                          AuthService().login(_emailController.text);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Login Berhasil!"), backgroundColor: Colors.green),
+                          );
+                          Navigator.pop(context, true); // Return true to indicate successful login
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF1A237E),
@@ -106,6 +126,8 @@ class _LoginPageState extends State<LoginPage> {
                 ],
               ),
             ),
+          ),
+          ),
           ),
         ),
       ),

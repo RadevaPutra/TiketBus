@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import '../models/schedule_model.dart';
 import 'package:intl/intl.dart';
 import 'seat_selection_page.dart';
+import '../services/auth_service.dart';
+import 'login_page.dart';
 
 class SearchResultPage extends StatefulWidget {
   final String originCity;
   final String destinationCity;
+  final String date;
 
   const SearchResultPage({
     super.key,
     required this.originCity,
     required this.destinationCity,
+    required this.date,
   });
 
   @override
@@ -111,7 +115,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              "12 Mei 2026 • ${filteredSchedules.length} Bus Tersedia",
+              "${widget.date} • ${filteredSchedules.length} Bus Tersedia",
               style: const TextStyle(fontSize: 12, color: Colors.white70),
             ),
           ],
@@ -120,22 +124,52 @@ class _SearchResultPageState extends State<SearchResultPage> {
         foregroundColor: Colors.white,
         centerTitle: true,
         elevation: 0,
-      ),
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildFilterSidebar(),
-          Expanded(
-            child: filteredSchedules.isEmpty 
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(24),
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: filteredSchedules.length,
-                  itemBuilder: (context, index) => _buildBusCard(filteredSchedules[index], context),
-                ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: AuthService().isLoggedIn
+                ? _buildUserMenu(context)
+                : TextButton(
+                    onPressed: () async {
+                      final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+                      if (result == true) {
+                        setState(() {});
+                      }
+                    },
+                    child: const Text("Masuk", style: TextStyle(color: Colors.amber, fontWeight: FontWeight.bold)),
+                  ),
           ),
         ],
+      ),
+      body: TweenAnimationBuilder<double>(
+        tween: Tween(begin: 0.0, end: 1.0),
+        duration: const Duration(milliseconds: 1000),
+        curve: Curves.easeOutCubic,
+        builder: (context, value, child) {
+          return Opacity(
+            opacity: value,
+            child: Transform.translate(
+              offset: Offset(0, 30 * (1 - value)),
+              child: child,
+            ),
+          );
+        },
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildFilterSidebar(),
+            Expanded(
+              child: filteredSchedules.isEmpty 
+                ? _buildEmptyState()
+                : ListView.builder(
+                    padding: const EdgeInsets.all(24),
+                    physics: const BouncingScrollPhysics(),
+                    itemCount: filteredSchedules.length,
+                    itemBuilder: (context, index) => _buildBusCard(filteredSchedules[index], context),
+                  ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -325,7 +359,7 @@ class _SearchResultPageState extends State<SearchResultPage> {
                             ),
                           ],
                         ),
-                        _timeCol("Besok", "Tiba", alignment: CrossAxisAlignment.end),
+                        _timeCol(_calculateArrivalTime(bus.departureTime, bus.duration), "Tujuan", alignment: CrossAxisAlignment.end),
                       ],
                     ),
                     const SizedBox(height: 15),
@@ -368,7 +402,9 @@ class _SearchResultPageState extends State<SearchResultPage> {
                               builder: (context) => SeatSelectionPage(
                                 originCity: widget.originCity,
                                 destinationCity: widget.destinationCity,
+                                date: widget.date,
                                 busName: "${bus.operatorName} - ${bus.classType}",
+                                price: bus.price.toDouble(),
                               ),
                             ),
                           );
@@ -400,5 +436,101 @@ class _SearchResultPageState extends State<SearchResultPage> {
         Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
       ],
     );
+  }
+
+  Widget _buildUserMenu(BuildContext context) {
+    return PopupMenuButton<String>(
+      onSelected: (value) {
+        if (value == 'logout') {
+          setState(() {
+            AuthService().logout();
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Berhasil Keluar"), backgroundColor: Colors.indigo),
+          );
+        }
+      },
+      offset: const Offset(0, 50),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          enabled: false,
+          child: Row(
+            children: [
+              const CircleAvatar(
+                backgroundColor: Colors.amber,
+                child: Icon(Icons.person, color: Colors.black87),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    AuthService().userName ?? "User",
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                  ),
+                  const Text(
+                    "Terverifikasi",
+                    style: TextStyle(fontSize: 12, color: Colors.green),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const PopupMenuDivider(),
+        const PopupMenuItem<String>(
+          value: 'profile',
+          child: Row(
+            children: [
+              Icon(Icons.person_outline, color: Colors.indigo),
+              SizedBox(width: 10),
+              Text("Profil Saya"),
+            ],
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'logout',
+          child: Row(
+            children: [
+              Icon(Icons.logout, color: Colors.redAccent),
+              SizedBox(width: 10),
+              Text("Keluar", style: TextStyle(color: Colors.redAccent)),
+            ],
+          ),
+        ),
+      ],
+      child: const CircleAvatar(
+        radius: 18,
+        backgroundColor: Colors.amber,
+        child: Icon(Icons.person, color: Colors.black87, size: 20),
+      ),
+    );
+  }
+
+  String _calculateArrivalTime(String departureTime, String duration) {
+    try {
+      final depParts = departureTime.split(":");
+      final int depH = int.parse(depParts[0]);
+      final int depM = int.parse(depParts[1]);
+
+      int durH = 0;
+      int durM = 0;
+      final durParts = duration.split(" ");
+      for (var p in durParts) {
+        if (p.endsWith("j")) durH = int.parse(p.substring(0, p.length - 1));
+        if (p.endsWith("m")) durM = int.parse(p.substring(0, p.length - 1));
+      }
+
+      int totalM = depM + durM;
+      int extraH = totalM ~/ 60;
+      int arrM = totalM % 60;
+      int arrH = (depH + durH + extraH) % 24;
+
+      return "${arrH.toString().padLeft(2, '0')}:${arrM.toString().padLeft(2, '0')}";
+    } catch (e) {
+      return "00:00";
+    }
   }
 }
