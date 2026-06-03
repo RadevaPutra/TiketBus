@@ -17,8 +17,10 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   DateTime departureDate = DateTime.now();
   DateTime? returnDate;
-  String originCity = "Jakarta";
-  String destinationCity = "Bandung";
+  String? originCity;
+  String? destinationCity;
+  
+  final ScrollController _scrollController = ScrollController();
 
   final List<String> indonesianCities = [
     "Jakarta", "Bandung", "Surabaya", "Semarang", "Yogyakarta",
@@ -29,6 +31,12 @@ class _HomePageState extends State<HomePage> {
     "Sukabumi", "Purwokerto", "Magelang", "Kediri", "Madiun",
     "Probolinggo", "Pasuruan", "Mojokerto", "Banyuwangi", "Jember"
   ];
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +60,7 @@ class _HomePageState extends State<HomePage> {
           );
         },
         child: SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             children: [
               _buildModernHeroSection(),
@@ -83,10 +92,13 @@ class _HomePageState extends State<HomePage> {
           ),
           const Spacer(),
           _navItem("Beranda", isActive: true, onTap: () {
-            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomePage()), (route) => false);
+            _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
           }),
-          _navItem("Tiket Bus", onTap: () {
-            Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomePage()), (route) => false);
+          _navItem("Promo", onTap: () {
+            _scrollController.animateTo(860.0, duration: const Duration(milliseconds: 600), curve: Curves.easeInOut);
+          }),
+          _navItem("Pesanan Saya", onTap: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrdersPage()));
           }),
           _navItem("Tips Perjalanan", onTap: () {
             Navigator.push(context, MaterialPageRoute(builder: (context) => const TravelTipsPage()));
@@ -331,7 +343,8 @@ class _HomePageState extends State<HomePage> {
     return Container(width: 1.5, height: 50, color: Colors.grey.withOpacity(0.2), margin: const EdgeInsets.symmetric(horizontal: 10));
   }
 
-  Widget _locationItem(String label, String value, IconData icon, Function(String) onSelected) {
+  Widget _locationItem(String label, String? value, IconData icon, Function(String) onSelected) {
+    bool hasValue = value != null && value.isNotEmpty;
     return InkWell(
       onTap: () => _showLocationPicker(label, value, onSelected),
       child: Column(
@@ -346,15 +359,19 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 5),
           Text(
-            value,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87),
+            hasValue ? value : "Pilih Kota $label",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: hasValue ? FontWeight.bold : FontWeight.normal,
+              color: hasValue ? Colors.black87 : Colors.grey.shade400,
+            ),
           ),
         ],
       ),
     );
   }
 
-  void _showLocationPicker(String label, String currentValue, Function(String) onSelected) {
+  void _showLocationPicker(String label, String? currentValue, Function(String) onSelected) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -447,12 +464,21 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSearchButton() {
     return ElevatedButton(
       onPressed: () {
+        if (originCity == null || destinationCity == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Pilih rute asal dan tujuan terlebih dahulu!"),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+          return;
+        }
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => SearchResultPage(
-              originCity: originCity,
-              destinationCity: destinationCity,
+              originCity: originCity!,
+              destinationCity: destinationCity!,
               date: DateFormat('dd MMM yyyy').format(departureDate),
             ),
           ),
