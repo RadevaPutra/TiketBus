@@ -342,33 +342,29 @@ class _SearchResultPageState extends State<SearchResultPage> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _timeCol(bus.departureTime, "Berangkat"),
-                        Column(
-                          children: [
-                            Text(bus.duration, style: const TextStyle(color: Colors.grey, fontSize: 11)),
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF1A237E), shape: BoxShape.circle)),
-                                Container(width: 60, height: 1, color: const Color(0xFF1A237E)),
-                                const Icon(Icons.directions_bus, size: 16, color: Color(0xFF1A237E)),
-                                Container(width: 60, height: 1, color: const Color(0xFF1A237E)),
-                                Container(width: 8, height: 8, decoration: BoxDecoration(border: Border.all(color: const Color(0xFF1A237E)), shape: BoxShape.circle)),
-                              ],
+                        _timeCol(bus.departureTime, widget.originCity),
+                        Expanded(
+                          flex: 3,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 25.0),
+                              child: Row(
+                                children: [
+                                  Expanded(child: Container(height: 1, color: Colors.grey.shade400)),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                                    child: Text(bus.duration, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                                  ),
+                                  Expanded(child: Container(height: 1, color: Colors.grey.shade400)),
+                                ],
+                              ),
                             ),
-                          ],
+                          ),
                         ),
-                        _timeCol(_calculateArrivalTime(bus.departureTime, bus.duration), "Tujuan", alignment: CrossAxisAlignment.end),
-                      ],
-                    ),
-                    const SizedBox(height: 15),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(child: Text(bus.origin, style: const TextStyle(fontSize: 11, color: Colors.grey), overflow: TextOverflow.ellipsis)),
-                        const SizedBox(width: 20),
-                        Expanded(child: Text(bus.destination, textAlign: TextAlign.right, style: const TextStyle(fontSize: 11, color: Colors.grey), overflow: TextOverflow.ellipsis)),
+                        _timeCol(_calculateArrivalTime(bus.departureTime, bus.duration), widget.destinationCity, alignment: CrossAxisAlignment.end),
                       ],
                     ),
                   ],
@@ -429,12 +425,16 @@ class _SearchResultPageState extends State<SearchResultPage> {
   }
 
   Widget _timeCol(String time, String label, {CrossAxisAlignment alignment = CrossAxisAlignment.start}) {
-    return Column(
-      crossAxisAlignment: alignment,
-      children: [
-        Text(time, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black87)),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-      ],
+    return Expanded(
+      flex: 4,
+      child: Column(
+        crossAxisAlignment: alignment,
+        children: [
+          Text(time, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.black87)),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13), overflow: TextOverflow.ellipsis, maxLines: 2),
+        ],
+      ),
     );
   }
 

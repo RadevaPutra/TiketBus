@@ -22,14 +22,25 @@ class _HomePageState extends State<HomePage> {
   
   final ScrollController _scrollController = ScrollController();
 
-  final List<String> indonesianCities = [
-    "Jakarta", "Bandung", "Surabaya", "Semarang", "Yogyakarta",
-    "Solo", "Malang", "Denpasar", "Medan", "Palembang",
-    "Makassar", "Balikpapan", "Pontianak", "Banjarmasin", "Manado",
-    "Lampung", "Padang", "Pekanbaru", "Batam", "Bogor",
-    "Tangerang", "Bekasi", "Depok", "Cirebon", "Tasikmalaya",
-    "Sukabumi", "Purwokerto", "Magelang", "Kediri", "Madiun",
-    "Probolinggo", "Pasuruan", "Mojokerto", "Banyuwangi", "Jember"
+  final List<String> busLocations = [
+    "Pasteur, Bandung",
+    "Dipatiukur, Bandung",
+    "Buahbatu, Bandung",
+    "Cibitung, Bekasi",
+    "Terminal Bekasi, Bekasi",
+    "Terminal Pulo Gebang, Jakarta",
+    "Terminal Kampung Rambutan, Jakarta",
+    "Lebak Bulus, Jakarta",
+    "Terminal Kalideres, Jakarta",
+    "Terminal Mangkang, Semarang",
+    "Terminal Banyumanik, Semarang",
+    "Terminal Bungurasih, Surabaya",
+    "Terminal Joyoboyo, Surabaya",
+    "Terminal Giwangan, Yogyakarta",
+    "Terminal Jombor, Yogyakarta",
+    "Terminal Tirtonadi, Solo",
+    "Terminal Arjosari, Malang",
+    "Terminal Mengwi, Denpasar"
   ];
 
   @override
@@ -384,18 +395,42 @@ class _HomePageState extends State<HomePage> {
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: indonesianCities.length,
+                itemCount: busLocations.length,
                 itemBuilder: (context, index) {
-                  String city = indonesianCities[index];
-                  bool isSelected = city == currentValue;
-                  return ListTile(
-                    leading: Icon(Icons.location_on_rounded, color: isSelected ? Colors.amber : Colors.grey),
-                    title: Text(city, style: TextStyle(fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? const Color(0xFF1A237E) : Colors.black87)),
-                    trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFF1A237E)) : null,
-                    onTap: () {
-                      onSelected(city);
-                      Navigator.pop(context);
-                    },
+                  String location = busLocations[index];
+                  bool isSelected = location == currentValue;
+                  return Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(color: Colors.grey.shade100, width: 1),
+                      ),
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                      leading: Icon(
+                        Icons.location_on,
+                        color: isSelected ? Colors.amber : Colors.grey,
+                        size: 24,
+                      ),
+                      title: Text(
+                        location,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                          color: isSelected ? const Color(0xFF1A237E) : Colors.black87,
+                        ),
+                      ),
+                      trailing: isSelected
+                          ? const Icon(Icons.check_circle, color: Color(0xFF1A237E))
+                          : Text(
+                              label == 'Asal' ? 'Naik dari' : 'Turun di',
+                              style: const TextStyle(color: Colors.grey, fontSize: 13),
+                            ),
+                      onTap: () {
+                        onSelected(location);
+                        Navigator.pop(context);
+                      },
+                    ),
                   );
                 },
               ),
