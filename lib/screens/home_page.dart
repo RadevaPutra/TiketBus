@@ -66,6 +66,8 @@ class _HomePageState extends State<HomePage> {
               _buildModernHeroSection(),
               _buildPremiumInfoSection(),
               _buildPromoSection(),
+              _buildTouristDestinationsSection(),
+              const SizedBox(height: 50),
             ],
           ),
         ),
@@ -87,7 +89,7 @@ class _HomePageState extends State<HomePage> {
           const _AnimatedBusLogo(),
           const SizedBox(width: 10),
           const Text(
-            "BUS ONLINE",
+            "SmartBus",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: 1.5),
           ),
           const Spacer(),
@@ -212,21 +214,7 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        PopupMenuItem<String>(
-          value: 'orders',
-          onTap: () {
-            Future.delayed(const Duration(milliseconds: 100), () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrdersPage()));
-            });
-          },
-          child: const Row(
-            children: [
-              Icon(Icons.confirmation_number_outlined, color: Colors.indigo),
-              SizedBox(width: 10),
-              Text("Pesanan Saya"),
-            ],
-          ),
-        ),
+
         const PopupMenuItem<String>(
           value: 'logout',
           child: Row(
@@ -599,6 +587,136 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTouristDestinationsSection() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Destinasi Wisata Terindah & Rute Terbaik di Indonesia", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
+          const SizedBox(height: 10),
+          const Text(
+            "Temukan pesona alam dan budaya nusantara dari kenyamanan perjalanan bus Anda. Kami merekomendasikan destinasi terbaik di berbagai pulau beserta informasinya.",
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          const SizedBox(height: 40),
+          _destinationCard(
+            "Pulau Bali: Surga Dewata",
+            "Wisata Pilihan:",
+            "• Pantai Kuta & Seminyak: Nikmati sunset memukau dan pasir putih membentang.\n• Ubud: Rasakan keheningan dengan pemandangan terasering sawah Tegalalang yang asri.\n• Pura Uluwatu: Pura di atas tebing karang dengan tarian kecak berlatar senja.\n• Gunung Batur: Pemandangan kaldera dan danau yang sangat indah dari rute pegunungan.\nPerjalanan bus menuju Bali menjadi sangat berkesan ketika Anda melewati rute pantura dan menyeberang menggunakan feri melintasi Selat Bali yang eksotis. Pilih rute malam hari untuk menikmati semilir angin laut.",
+            "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=800",
+          ),
+          const SizedBox(height: 30),
+          _destinationCard(
+            "Pulau Jawa: Jejak Budaya & Alam",
+            "Wisata Pilihan:",
+            "• Gunung Bromo (Jawa Timur): Perjalanan mendebarkan melihat lautan pasir dan sunrise yang magis.\n• Candi Borobudur (Magelang/Jawa Tengah): Candi Budha terbesar di dunia dengan susunan batuan yang menakjubkan.\n• Kawah Putih ciwidey (Bandung/Jawa Barat): Danau belerang putih dengan nuansa alam berkabut.\n• Pantai Selatan (Yogyakarta): Pemandangan pantai yang sangat indah dari rute jalanan pesisir seperti Pantai Parangtritis.\nRute Tol Trans-Jawa saat ini sangat mulus dan cepat, sambil menawarkan lanskap persawahan, perbukitan, serta gunung-gunung gagah sebagai latar belakang.",
+            "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?auto=format&fit=crop&q=80&w=800",
+            isReversed: true,
+          ),
+          const SizedBox(height: 30),
+          _destinationCard(
+            "Pulau Sumatera: Alam Liar & Danau Indah",
+            "Wisata Pilihan:",
+            "• Danau Toba & Pulau Samosir (Sumatera Utara): Danau vulkanik terbesar dengan kebudayaan Batak yang kental.\n• Jam Gadang & Ngarai Sianok (Sumatera Barat): Pemandangan lembang hijau yang menawan di Bukittinggi.\n• Pantai Lhoknga & Lampuuk (Aceh): Pesona pasir putih di ujung barat Indonesia.\n• Gunung Kerinci (Jambi): Lanskap indah untuk para pecinta alam.\nPerjalanan Lintas Sumatera sangat populer karena rute ini menembus hutan tropis, perbukitan, hingga kawasan Kelok 9 yang merupakan salah satu karya infrastruktur paling ikonik yang menyatu dengan tebing alaminya.",
+            "https://images.unsplash.com/photo-1596422846543-7ec94c1c9ff5?auto=format&fit=crop&q=80&w=800",
+          ),
+          const SizedBox(height: 30),
+          _destinationCard(
+            "Pulau Kalimantan: Eksotisme Hutan Tropis",
+            "Wisata Pilihan:",
+            "• Pasar Terapung Lok Baintan (Banjarmasin): Merasakan sensasi jual-beli di atas perahu.\n• Kepulauan Derawan (Kaltim): Spot diving terbaik dengan keanekaragaman biota laut.\n• Taman Nasional Tanjung Puting (Kalteng): Melihat orangutan di habitat aslinya.\nEksplorasi Kalimantan dengan rute bus memberi pengalaman menyusuri sungai-sungai besar dan rute trans-Kalimantan yang membelah rimbunnya hutan tropis.",
+            "https://images.unsplash.com/photo-1604928141064-207cea6f5722?auto=format&fit=crop&q=80&w=800",
+            isReversed: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _destinationCard(String title, String subtitle, String description, String imageUrl, {bool isReversed = false}) {
+    List<Widget> content = [
+      Expanded(
+        flex: 2,
+        child: Container(
+          height: 350,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            image: DecorationImage(
+              image: NetworkImage(imageUrl),
+              fit: BoxFit.cover,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(width: 40),
+      Expanded(
+        flex: 3,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              subtitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.amber),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.6),
+            ),
+            const SizedBox(height: 25),
+            ElevatedButton(
+              onPressed: () {
+                _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1A237E),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+              ),
+              child: const Text("Cari Tiket Ke Sini", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+            ),
+          ],
+        ),
+      ),
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: isReversed ? content.reversed.toList() : content,
       ),
     );
   }
