@@ -37,7 +37,7 @@ class MyOrdersPage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          Icon(Icons.confirmation_number_outlined, size: 80, color: Colors.grey),
+          AnimatedTicketIcon(),
           SizedBox(height: 16),
           Text("Belum Ada Pesanan", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           SizedBox(height: 8),
@@ -100,6 +100,44 @@ class MyOrdersPage extends StatelessWidget {
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+}
+
+class AnimatedTicketIcon extends StatefulWidget {
+  const AnimatedTicketIcon({super.key});
+
+  @override
+  State<AnimatedTicketIcon> createState() => _AnimatedTicketIconState();
+}
+
+class _AnimatedTicketIconState extends State<AnimatedTicketIcon> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2))..repeat(reverse: true);
+    _animation = Tween<double>(begin: -10, end: 10).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _animation.value),
+          child: const Icon(Icons.confirmation_number_outlined, size: 80, color: Colors.grey),
         );
       },
     );

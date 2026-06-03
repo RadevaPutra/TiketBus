@@ -40,7 +40,7 @@ class _RegisterPageState extends State<RegisterPage> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.person_add_rounded, size: 80, color: Color(0xFF1A237E)),
+                  const _AnimatedRegisterIcon(),
                   const SizedBox(height: 20),
                   const Text(
                     "Daftar Akun Baru",
@@ -137,6 +137,47 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _AnimatedRegisterIcon extends StatefulWidget {
+  const _AnimatedRegisterIcon();
+
+  @override
+  _AnimatedRegisterIconState createState() => _AnimatedRegisterIconState();
+}
+
+class _AnimatedRegisterIconState extends State<_AnimatedRegisterIcon> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: -10, end: 10).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _animation.value),
+          child: const Icon(Icons.person_add_rounded, size: 80, color: Color(0xFF1A237E)),
+        );
+      },
     );
   }
 }

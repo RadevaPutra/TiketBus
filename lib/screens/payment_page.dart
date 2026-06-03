@@ -4,6 +4,7 @@ import '../models/booking_model.dart';
 import 'login_page.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'bus_tracking_page.dart';
+import 'dart:convert';
 
 class PaymentPage extends StatefulWidget {
   final int selectedSeats;
@@ -304,8 +305,20 @@ class _PaymentPageState extends State<PaymentPage> {
     const String phoneNumber = "+6281933053869";
     final String userName = AuthService().userName ?? "Pengguna";
     
-    // Generate a dummy Booking ID and Link for professional look
-    final String ticketLink = "https://tiketbus.com/tix/$bookingId";
+    String baseUrl = "https://tiketbus.com";
+    try {
+      baseUrl = Uri.base.origin;
+    } catch (_) {}
+
+    final Map<String, String> ticketData = {
+      'bus': widget.busName,
+      'rute': '${widget.origin} - ${widget.destination}',
+      'tanggal': widget.date,
+      'kursi': widget.seatNumbers.join(','),
+    };
+    final String encodedData = base64Url.encode(utf8.encode(jsonEncode(ticketData))).replaceAll('=', '');
+
+    final String ticketLink = "$baseUrl/#/tix/$bookingId?d=$encodedData";
     
     String promoText = _appliedPromo.isNotEmpty ? "\nPromo Digunakan: $_appliedPromo (Diskon Rp ${_discountAmount.toStringAsFixed(0)})" : "";
 
@@ -313,10 +326,14 @@ class _PaymentPageState extends State<PaymentPage> {
         "Saya ingin konfirmasi booking tiket:\n"
         "ID Booking: $bookingId\n"
         "Nama: $userName\n"
+        "Bus: ${widget.busName}\n"
+        "Rute: ${widget.origin} - ${widget.destination}\n"
+        "Tanggal: ${widget.date}\n"
+        "Nomor Kursi: ${widget.seatNumbers.join(', ')}\n"
         "Jumlah Kursi: ${widget.selectedSeats}$promoText\n"
         "Metode Pembayaran: $_selectedMethod\n"
         "Total Pembayaran: Rp ${totalAmount.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}\n\n"
-        "Bukti Tiket: $ticketLink\n\n"
+        "Link E-Tiket: $ticketLink\n\n"
         "Mohon segera dikonfirmasi. Terima kasih!";
 
     final Uri whatsappUrl = Uri.parse("https://wa.me/$phoneNumber?text=${Uri.encodeComponent(message)}");

@@ -131,7 +131,7 @@ class _HomePageState extends State<HomePage> {
                     foregroundColor: Colors.black87,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
-                  child: const Text("Masuk / Daftar", style: TextStyle(fontWeight: FontWeight.bold)),
+                  child: const Text("Login", style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
         ],
       ),
@@ -345,7 +345,13 @@ class _HomePageState extends State<HomePage> {
   Widget _locationItem(String label, String? value, IconData icon, Function(String) onSelected) {
     bool hasValue = value != null && value.isNotEmpty;
     return InkWell(
-      onTap: () => _showLocationPicker(label, value, onSelected),
+      onTap: () {
+        if (!AuthService().isLoggedIn) {
+          _showLoginWarning();
+          return;
+        }
+        _showLocationPicker(label, value, onSelected);
+      },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -444,6 +450,10 @@ class _HomePageState extends State<HomePage> {
   Widget _dateItem(String label, DateTime? date, {bool isOptional = false}) {
     return InkWell(
       onTap: () async {
+        if (!AuthService().isLoggedIn) {
+          _showLoginWarning();
+          return;
+        }
         final picked = await showDatePicker(
           context: context,
           initialDate: date ?? DateTime.now(),
@@ -487,6 +497,10 @@ class _HomePageState extends State<HomePage> {
   Widget _buildSearchButton() {
     return ElevatedButton(
       onPressed: () {
+        if (!AuthService().isLoggedIn) {
+          _showLoginWarning();
+          return;
+        }
         if (originCity == null || destinationCity == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -523,6 +537,25 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _showLoginWarning() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text("Anda Belum Login!"),
+        backgroundColor: Colors.redAccent,
+        action: SnackBarAction(
+          label: 'Login',
+          textColor: Colors.white,
+          onPressed: () async {
+            final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+            if (result == true) {
+              setState(() {});
+            }
+          },
+        ),
+      ),
+    );
+  }
+
   Widget _buildPremiumInfoSection() {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 50),
@@ -548,7 +581,7 @@ class _HomePageState extends State<HomePage> {
             shape: BoxShape.circle,
             boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20)],
           ),
-          child: Icon(icon, color: const Color(0xFF1A237E), size: 35),
+          child: _AnimatedPremiumIcon(icon: icon),
         ),
         const SizedBox(height: 20),
         Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1A237E))),
@@ -658,14 +691,14 @@ class _HomePageState extends State<HomePage> {
             "Pulau Sumatera: Alam Liar & Danau Indah",
             "Wisata Pilihan:",
             "• Danau Toba & Pulau Samosir (Sumatera Utara): Danau vulkanik terbesar dengan kebudayaan Batak yang kental.\n• Jam Gadang & Ngarai Sianok (Sumatera Barat): Pemandangan lembang hijau yang menawan di Bukittinggi.\n• Pantai Lhoknga & Lampuuk (Aceh): Pesona pasir putih di ujung barat Indonesia.\n• Gunung Kerinci (Jambi): Lanskap indah untuk para pecinta alam.\nPerjalanan Lintas Sumatera sangat populer karena rute ini menembus hutan tropis, perbukitan, hingga kawasan Kelok 9 yang merupakan salah satu karya infrastruktur paling ikonik yang menyatu dengan tebing alaminya.",
-            "https://images.unsplash.com/photo-1596422846543-7ec94c1c9ff5?auto=format&fit=crop&q=80&w=800",
+            "https://images.unsplash.com/photo-1542259009477-d625272157b7?auto=format&fit=crop&q=80&w=800",
           ),
           const SizedBox(height: 30),
           _destinationCard(
             "Pulau Kalimantan: Eksotisme Hutan Tropis",
             "Wisata Pilihan:",
             "• Pasar Terapung Lok Baintan (Banjarmasin): Merasakan sensasi jual-beli di atas perahu.\n• Kepulauan Derawan (Kaltim): Spot diving terbaik dengan keanekaragaman biota laut.\n• Taman Nasional Tanjung Puting (Kalteng): Melihat orangutan di habitat aslinya.\nEksplorasi Kalimantan dengan rute bus memberi pengalaman menyusuri sungai-sungai besar dan rute trans-Kalimantan yang membelah rimbunnya hutan tropis.",
-            "https://images.unsplash.com/photo-1604928141064-207cea6f5722?auto=format&fit=crop&q=80&w=800",
+            "https://images.unsplash.com/photo-1505765050516-f72dcac9c60e?auto=format&fit=crop&q=80&w=800",
             isReversed: true,
           ),
         ],
@@ -792,6 +825,50 @@ class _AnimatedBusLogoState extends State<_AnimatedBusLogo> with SingleTickerPro
     return SlideTransition(
       position: _animation,
       child: const Icon(Icons.directions_bus, color: Colors.amber, size: 30),
+    );
+  }
+}
+
+class _AnimatedPremiumIcon extends StatefulWidget {
+  final IconData icon;
+  const _AnimatedPremiumIcon({required this.icon, Key? key}) : super(key: key);
+
+  @override
+  _AnimatedPremiumIconState createState() => _AnimatedPremiumIconState();
+}
+
+class _AnimatedPremiumIconState extends State<_AnimatedPremiumIcon> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+       vsync: this,
+       duration: const Duration(milliseconds: 1500),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: -5.0, end: 5.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut)
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(0, _animation.value),
+          child: Icon(widget.icon, color: const Color(0xFF1A237E), size: 35),
+        );
+      },
     );
   }
 }

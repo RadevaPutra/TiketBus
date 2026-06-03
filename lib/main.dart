@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/home_page.dart';
+import 'screens/eticket_page.dart';
+import 'dart:convert';
 
 void main() {
   runApp(BusTicketApp());
@@ -53,6 +55,53 @@ class BusTicketApp extends StatelessWidget {
         ),
       ),
       debugShowCheckedModeBanner: false,
+      onGenerateRoute: (settings) {
+        if (settings.name != null && settings.name!.startsWith('/tix/')) {
+          final uri = Uri.parse(settings.name!);
+          final parts = uri.pathSegments;
+          if (parts.length >= 2 && parts[0] == 'tix') {
+            final bookingId = parts[1];
+            String busName = 'Bus Reguler';
+            String route = 'Tidak Diketahui';
+            String date = 'Tidak Diketahui';
+            String seats = '-';
+            
+            if (uri.queryParameters.containsKey('d')) {
+              try {
+                // Determine padding if missing
+                String base64Str = uri.queryParameters['d']!;
+                while (base64Str.length % 4 != 0) {
+                  base64Str += '=';
+                }
+                final decodedJson = utf8.decode(base64Url.decode(base64Str));
+                final Map<String, dynamic> data = jsonDecode(decodedJson);
+                busName = data['bus'] ?? busName;
+                route = data['rute'] ?? route;
+                date = data['tanggal'] ?? date;
+                seats = data['kursi'] ?? seats;
+              } catch (e) {
+                debugPrint('Ticket Decode Error: $e');
+              }
+            } else {
+              busName = uri.queryParameters['bus'] ?? busName;
+              route = uri.queryParameters['rute'] ?? route;
+              date = uri.queryParameters['tanggal'] ?? date;
+              seats = uri.queryParameters['kursi'] ?? seats;
+            }
+            
+            return MaterialPageRoute(
+              builder: (context) => ETicketPage(
+                bookingId: bookingId,
+                busName: busName,
+                route: route,
+                date: date,
+                seats: seats,
+              ),
+            );
+          }
+        }
+        return null;
+      },
       home: HomePage(),
     );
   }
