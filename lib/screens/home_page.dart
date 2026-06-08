@@ -539,19 +539,9 @@ class _HomePageState extends State<HomePage> {
 
   void _showLoginWarning() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text("Anda Belum Login!"),
+      const SnackBar(
+        content: Text("Anda Belum Login!"),
         backgroundColor: Colors.redAccent,
-        action: SnackBarAction(
-          label: 'Login',
-          textColor: Colors.white,
-          onPressed: () async {
-            final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
-            if (result == true) {
-              setState(() {});
-            }
-          },
-        ),
       ),
     );
   }
