@@ -87,49 +87,63 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildGlassNavbar() {
+    bool isMobile = MediaQuery.of(context).size.width < 800;
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 24, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.3),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withOpacity(0.2)),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const _AnimatedBusLogo(),
-          const SizedBox(width: 10),
-          const Text(
-            "SmartBus",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: 1.5),
+          Row(
+            children: [
+              const _AnimatedBusLogo(),
+              if (!isMobile) const SizedBox(width: 10),
+              if (!isMobile)
+                const Text(
+                  "SmartBus",
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: 1.5),
+                ),
+            ],
           ),
-          const Spacer(),
-          _navItem("Beranda", isActive: true, onTap: () {
-            _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
-          }),
-          _navItem("Promo", onTap: () {
-            _scrollController.animateTo(860.0, duration: const Duration(milliseconds: 600), curve: Curves.easeInOut);
-          }),
-          _navItem("Pesanan Saya", onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrdersPage()));
-          }),
-          _navItem("Tips Perjalanan", onTap: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const TravelTipsPage()));
-          }),
-          const SizedBox(width: 20),
+          if (!isMobile)
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                   _navItem("Beranda", isActive: true, onTap: () {
+                     _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+                   }),
+                   _navItem("Promo", onTap: () {
+                     _scrollController.animateTo(860.0, duration: const Duration(milliseconds: 600), curve: Curves.easeInOut);
+                   }),
+                   _navItem("Pesanan Saya", onTap: () {
+                     Navigator.push(context, MaterialPageRoute(builder: (context) => const MyOrdersPage()));
+                   }),
+                   _navItem("Tips Perjalanan", onTap: () {
+                     Navigator.push(context, MaterialPageRoute(builder: (context) => const TravelTipsPage()));
+                   }),
+                ],
+              ),
+            ),
+          const SizedBox(width: 10),
           AuthService().isLoggedIn
               ? _buildUserMenu()
               : ElevatedButton(
                   onPressed: () async {
                     final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
                     if (result == true) {
-                      setState(() {}); // Rebuild to show user icon
+                      setState(() {});
                     }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber,
                     foregroundColor: Colors.black87,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: EdgeInsets.symmetric(horizontal: isMobile ? 12 : 20, vertical: 12),
                   ),
                   child: const Text("Login", style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
@@ -310,31 +324,48 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildFloatingSearchContainer() {
+    bool isMobile = MediaQuery.of(context).size.width < 800;
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40),
-      padding: const EdgeInsets.all(20),
+      margin: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 40),
+      padding: EdgeInsets.all(isMobile ? 15 : 20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(isMobile ? 20 : 30),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 40, offset: const Offset(0, 15)),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(child: _locationItem("Asal", originCity, Icons.location_on_rounded, (city) {
-            setState(() => originCity = city);
-          })),
-          _divider(),
-          Expanded(child: _locationItem("Tujuan", destinationCity, Icons.location_city_rounded, (city) {
-            setState(() => destinationCity = city);
-          })),
-          _divider(),
-          Expanded(child: _dateItem("Pergi", departureDate)),
-          const SizedBox(width: 20),
-          _buildSearchButton(),
-        ],
-      ),
+      child: isMobile
+          ? Column(
+              children: [
+                _locationItem("Asal", originCity, Icons.location_on_rounded, (city) {
+                  setState(() => originCity = city);
+                }),
+                const Divider(height: 30),
+                _locationItem("Tujuan", destinationCity, Icons.location_city_rounded, (city) {
+                  setState(() => destinationCity = city);
+                }),
+                const Divider(height: 30),
+                _dateItem("Pergi", departureDate),
+                const SizedBox(height: 20),
+                SizedBox(width: double.infinity, child: _buildSearchButton()),
+              ],
+            )
+          : Row(
+              children: [
+                Expanded(child: _locationItem("Asal", originCity, Icons.location_on_rounded, (city) {
+                  setState(() => originCity = city);
+                })),
+                _divider(),
+                Expanded(child: _locationItem("Tujuan", destinationCity, Icons.location_city_rounded, (city) {
+                  setState(() => destinationCity = city);
+                })),
+                _divider(),
+                Expanded(child: _dateItem("Pergi", departureDate)),
+                const SizedBox(width: 20),
+                _buildSearchButton(),
+              ],
+            ),
     );
   }
 
@@ -550,8 +581,10 @@ class _HomePageState extends State<HomePage> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 50),
       color: const Color(0xFFF8F9FB),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      child: Wrap(
+        alignment: WrapAlignment.spaceEvenly,
+        spacing: 20,
+        runSpacing: 30,
         children: [
           _premiumInfoItem(Icons.verified_user_rounded, "Keamanan Terjamin", "Transaksi aman & terpercaya"),
           _premiumInfoItem(Icons.local_offer_rounded, "Harga Terbaik", "Diskon eksklusif setiap hari"),
@@ -697,69 +730,70 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _destinationCard(String title, String subtitle, String description, String imageUrl, {bool isReversed = false}) {
-    List<Widget> content = [
-      Expanded(
-        flex: 2,
-        child: Container(
-          height: 350,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            image: DecorationImage(
-              image: NetworkImage(imageUrl),
-              fit: BoxFit.cover,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 5),
-              ),
-            ],
+    bool isMobile = MediaQuery.of(context).size.width < 800;
+    
+    Widget imageWidget = Container(
+      height: isMobile ? 250 : 350,
+      width: isMobile ? double.infinity : null,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        image: DecorationImage(
+          image: NetworkImage(imageUrl),
+          fit: BoxFit.cover,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
-        ),
+        ],
       ),
-      const SizedBox(width: 40),
-      Expanded(
-        flex: 3,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              subtitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.amber),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              description,
-              style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.6),
-            ),
-            const SizedBox(height: 25),
-            ElevatedButton(
-              onPressed: () {
-                _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1A237E),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
-              ),
-              child: const Text("Cari Tiket Ke Sini", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-            ),
-          ],
+    );
+
+    Widget textWidget = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF1A237E)),
         ),
-      ),
+        const SizedBox(height: 10),
+        Text(
+          subtitle,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.amber),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          description,
+          style: const TextStyle(fontSize: 15, color: Colors.black87, height: 1.6),
+        ),
+        const SizedBox(height: 25),
+        ElevatedButton(
+          onPressed: () {
+            _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1A237E),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+          ),
+          child: const Text("Cari Tiket Ke Sini", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+        ),
+      ],
+    );
+
+    List<Widget> content = [
+      if (!isMobile) Expanded(flex: 2, child: imageWidget) else imageWidget,
+      SizedBox(width: isMobile ? 0 : 40, height: isMobile ? 20 : 0),
+      if (!isMobile) Expanded(flex: 3, child: textWidget) else textWidget,
     ];
 
     return Container(
-      padding: const EdgeInsets.all(25),
+      padding: EdgeInsets.all(isMobile ? 15 : 25),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
@@ -772,10 +806,15 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: isReversed ? content.reversed.toList() : content,
-      ),
+      child: isMobile 
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: content,
+          )
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: isReversed ? content.reversed.toList() : content,
+          ),
     );
   }
 }
