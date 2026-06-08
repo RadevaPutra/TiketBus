@@ -154,22 +154,38 @@ class _SearchResultPageState extends State<SearchResultPage> {
             ),
           );
         },
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildFilterSidebar(),
-            Expanded(
-              child: filteredSchedules.isEmpty 
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.all(24),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: filteredSchedules.length,
-                    itemBuilder: (context, index) => _buildBusCard(filteredSchedules[index], context),
+        child: MediaQuery.of(context).size.width < 800 
+            ? ListView(
+                physics: const BouncingScrollPhysics(),
+                children: [
+                   _buildFilterSidebar(isMobile: true),
+                   filteredSchedules.isEmpty 
+                     ? _buildEmptyState()
+                     : ListView.builder(
+                         shrinkWrap: true,
+                         physics: const NeverScrollableScrollPhysics(),
+                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                         itemCount: filteredSchedules.length,
+                         itemBuilder: (context, index) => _buildBusCard(filteredSchedules[index], context, isMobile: true),
+                       ),
+                ],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildFilterSidebar(isMobile: false),
+                  Expanded(
+                    child: filteredSchedules.isEmpty 
+                      ? _buildEmptyState()
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(24),
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: filteredSchedules.length,
+                          itemBuilder: (context, index) => _buildBusCard(filteredSchedules[index], context, isMobile: false),
+                        ),
                   ),
-            ),
-          ],
-        ),
+                ],
+              ),
       ),
     );
   }
@@ -198,55 +214,59 @@ class _SearchResultPageState extends State<SearchResultPage> {
     );
   }
 
-  Widget _buildFilterSidebar() {
+  Widget _buildFilterSidebar({required bool isMobile}) {
     return Container(
-      width: 280,
-      margin: const EdgeInsets.only(left: 24, top: 24, bottom: 24),
+      width: isMobile ? double.infinity : 280,
+      margin: EdgeInsets.only(left: isMobile ? 16 : 24, right: isMobile ? 16 : 0, top: 24, bottom: isMobile ? 10 : 24),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20)],
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      child: isMobile 
+        ? _buildFilterSidebarContent()
+        : SingleChildScrollView(child: _buildFilterSidebarContent()),
+    );
+  }
+
+  Widget _buildFilterSidebarContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Row(
           children: [
-            const Row(
-              children: [
-                Icon(Icons.tune_rounded, color: Color(0xFF1A237E)),
-                SizedBox(width: 10),
-                Text("Filter Pencarian", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1A237E))),
-              ],
-            ),
-            const Divider(height: 40),
-            _filterSection("Waktu Keberangkatan", ["Pagi (00:00 - 12:00)", "Siang (12:00 - 18:00)", "Malam (18:00 - 24:00)"], selectedTimes),
-            const SizedBox(height: 20),
-            _filterSection("Tipe Bus", ["Executive", "Sleeper Class", "Super Executive", "Suite Class"], selectedTypes),
-            const SizedBox(height: 20),
-            _filterSection("Fasilitas", ["AC", "WiFi", "Toilet", "Makan"], selectedFacilities),
-            const SizedBox(height: 30),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedTimes.clear();
-                    selectedTypes.clear();
-                    selectedFacilities.clear();
-                  });
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF1A237E)),
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                ),
-                child: const Text("Reset Filter", style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.bold)),
-              ),
-            ),
+            Icon(Icons.tune_rounded, color: Color(0xFF1A237E)),
+            SizedBox(width: 10),
+            Text("Filter Pencarian", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1A237E))),
           ],
         ),
-      ),
+        const Divider(height: 40),
+        _filterSection("Waktu Keberangkatan", ["Pagi (00:00 - 12:00)", "Siang (12:00 - 18:00)", "Malam (18:00 - 24:00)"], selectedTimes),
+        const SizedBox(height: 20),
+        _filterSection("Tipe Bus", ["Executive", "Sleeper Class", "Super Executive", "Suite Class"], selectedTypes),
+        const SizedBox(height: 20),
+        _filterSection("Fasilitas", ["AC", "WiFi", "Toilet", "Makan"], selectedFacilities),
+        const SizedBox(height: 30),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton(
+            onPressed: () {
+              setState(() {
+                selectedTimes.clear();
+                selectedTypes.clear();
+                selectedFacilities.clear();
+              });
+            },
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFF1A237E)),
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+            ),
+            child: const Text("Reset Filter", style: TextStyle(color: Color(0xFF1A237E), fontWeight: FontWeight.bold)),
+          ),
+        ),
+      ],
     );
   }
 
@@ -301,7 +321,117 @@ class _SearchResultPageState extends State<SearchResultPage> {
     );
   }
 
-  Widget _buildBusCard(BusSchedule bus, BuildContext context) {
+  Widget _buildBusCard(BusSchedule bus, BuildContext context, {required bool isMobile}) {
+    List<Widget> childrenWidgets = [
+      Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(bus.operatorName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFF1A237E))),
+            const SizedBox(height: 5),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(10)),
+              child: Text(bus.classType, style: const TextStyle(color: Colors.brown, fontSize: 11, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+      if (!isMobile) const VerticalDivider(width: 1, indent: 20, endIndent: 20, color: Color(0xFFEEEEEE)) else const Divider(height: 1, color: Color(0xFFEEEEEE)),
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _timeCol(bus.departureTime, widget.originCity),
+                Expanded(
+                  flex: 3,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 25.0),
+                      child: Row(
+                        children: [
+                          Expanded(child: Container(height: 1, color: Colors.grey.shade400)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Text(bus.duration, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          ),
+                          Expanded(child: Container(height: 1, color: Colors.grey.shade400)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                _timeCol(_calculateArrivalTime(bus.departureTime, bus.duration), widget.destinationCity, alignment: CrossAxisAlignment.end),
+              ],
+            ),
+          ],
+        ),
+      ),
+      if (!isMobile) const VerticalDivider(width: 1, indent: 20, endIndent: 20, color: Color(0xFFEEEEEE)) else const Divider(height: 1, color: Color(0xFFEEEEEE)),
+      Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF8F9FB),
+          borderRadius: isMobile 
+            ? const BorderRadius.only(bottomLeft: Radius.circular(25), bottomRight: Radius.circular(25))
+            : const BorderRadius.only(topRight: Radius.circular(25), bottomRight: Radius.circular(25)),
+        ),
+        child: Column(
+          crossAxisAlignment: isMobile ? CrossAxisAlignment.start : CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                     Text(currencyFormatter.format(bus.price), 
+                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Color(0xFF1A237E))),
+                     Text("${bus.availableSeats} kursi tersedia", style: const TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                if (isMobile)
+                  ElevatedButton(
+                    onPressed: () => _handleSelectBus(bus, context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.black87,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                    ),
+                    child: const Text("Pilih", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+              ],
+            ),
+            if (!isMobile) const SizedBox(height: 15),
+            if (!isMobile)
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => _handleSelectBus(bus, context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.amber,
+                    foregroundColor: Colors.black87,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  child: const Text("Pilih", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+          ],
+        ),
+      ),
+    ];
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -309,116 +439,36 @@ class _SearchResultPageState extends State<SearchResultPage> {
         borderRadius: BorderRadius.circular(25),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
       ),
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              flex: 3,
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(bus.operatorName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Color(0xFF1A237E))),
-                    const SizedBox(height: 5),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(color: Colors.amber.shade100, borderRadius: BorderRadius.circular(10)),
-                      child: Text(bus.classType, style: const TextStyle(color: Colors.brown, fontSize: 11, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-              ),
+      child: isMobile 
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: childrenWidgets,
+          )
+        : IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(flex: 3, child: childrenWidgets[0]),
+                childrenWidgets[1],
+                Expanded(flex: 5, child: childrenWidgets[2]),
+                childrenWidgets[3],
+                Expanded(flex: 3, child: childrenWidgets[4]),
+              ],
             ),
-            const VerticalDivider(width: 1, indent: 20, endIndent: 20, color: Color(0xFFEEEEEE)),
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _timeCol(bus.departureTime, widget.originCity),
-                        Expanded(
-                          flex: 3,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Padding(
-                              padding: const EdgeInsets.only(bottom: 25.0),
-                              child: Row(
-                                children: [
-                                  Expanded(child: Container(height: 1, color: Colors.grey.shade400)),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                                    child: Text(bus.duration, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                                  ),
-                                  Expanded(child: Container(height: 1, color: Colors.grey.shade400)),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        _timeCol(_calculateArrivalTime(bus.departureTime, bus.duration), widget.destinationCity, alignment: CrossAxisAlignment.end),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const VerticalDivider(width: 1, indent: 20, endIndent: 20, color: Color(0xFFEEEEEE)),
-            Expanded(
-              flex: 3,
-              child: Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF8F9FB),
-                  borderRadius: const BorderRadius.only(topRight: Radius.circular(25), bottomRight: Radius.circular(25)),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(currencyFormatter.format(bus.price), 
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Color(0xFF1A237E))),
-                    Text("${bus.availableSeats} kursi tersedia", style: const TextStyle(color: Colors.orange, fontSize: 12, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 15),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => SeatSelectionPage(
-                                originCity: widget.originCity,
-                                destinationCity: widget.destinationCity,
-                                date: widget.date,
-                                busName: "${bus.operatorName} - ${bus.classType}",
-                                price: bus.price.toDouble(),
-                              ),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber,
-                          foregroundColor: Colors.black87,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        ),
-                        child: const Text("Pilih", style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          ),
+    );
+  }
+
+  void _handleSelectBus(BusSchedule bus, BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SeatSelectionPage(
+          originCity: widget.originCity,
+          destinationCity: widget.destinationCity,
+          date: widget.date,
+          busName: "${bus.operatorName} - ${bus.classType}",
+          price: bus.price.toDouble(),
         ),
       ),
     );

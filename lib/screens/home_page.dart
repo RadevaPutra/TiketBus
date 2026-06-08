@@ -102,12 +102,11 @@ class _HomePageState extends State<HomePage> {
           Row(
             children: [
               const _AnimatedBusLogo(),
-              if (!isMobile) const SizedBox(width: 10),
-              if (!isMobile)
-                const Text(
-                  "SmartBus",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: 1.5),
-                ),
+              const SizedBox(width: 10),
+              const Text(
+                "SmartBus",
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20, letterSpacing: 1.5),
+              ),
             ],
           ),
           if (!isMobile)
