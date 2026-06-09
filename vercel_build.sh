@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # Script to build Flutter web on Vercel
 
 echo "Installing Flutter..."
